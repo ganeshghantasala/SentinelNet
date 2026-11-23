@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.mpl_cache/
+.venv/
+venv/
+.env
+.env.*
+audit_scan_history.jsonl
+intrusion_audit_log.jsonl
+*.log

@@ -1,0 +1,6 @@
+Scenario,Description,Enhanced Flows (%),Fallback Flows (%),Basic Native Flows (%),Overall Accuracy (%),Weighted F1,Macro F1,Probe Recall (%),DoS Recall (%),Normal Recall (%)
+Scenario 1: Ideal Enhanced Telemetry,100% full enhanced 10-feature availability,100.0,0.0,0.0,85.16,0.8476,0.8126,60.8,77.59,97.05
+Scenario 2: High Enhanced Availability,"75% enhanced, 15% corrupted/fallback, 10% basic-only",75.0,15.0,9.9,84.36,0.8371,0.7894,52.91,78.32,96.84
+Scenario 3: Balanced Heterogeneous Ingest,"50% enhanced, 25% corrupted/fallback, 25% basic-only",50.1,25.0,25.0,83.58,0.8265,0.7652,45.48,79.02,96.58
+Scenario 4: High Feature Degradation,"25% enhanced, 35% corrupted/fallback, 40% basic-only",25.1,35.2,39.7,82.74,0.8146,0.738,37.75,79.65,96.33
+Scenario 5: Pure Legacy Basic Flows,0% enhanced availability (100% 4-feature legacy flows),0.0,0.0,100.0,81.88,0.8016,0.7084,30.07,80.17,96.11

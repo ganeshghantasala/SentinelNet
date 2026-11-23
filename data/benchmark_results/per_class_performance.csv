@@ -1,0 +1,19 @@
+Model,Class,Precision,Recall,F1-Score,Support
+Logistic Regression (10 Feat),Normal,0.7978,0.9373,0.8619,9711
+Logistic Regression (10 Feat),DoS,0.9113,0.7151,0.8014,7460
+Logistic Regression (10 Feat),Probe,0.5603,0.539,0.5495,2421
+K-Nearest Neighbors (10 Feat),Normal,0.813,0.9694,0.8844,9711
+K-Nearest Neighbors (10 Feat),DoS,0.9567,0.7847,0.8622,7460
+K-Nearest Neighbors (10 Feat),Probe,0.8321,0.651,0.7305,2421
+Decision Tree (10 Feat),Normal,0.8135,0.9354,0.8702,9711
+Decision Tree (10 Feat),DoS,0.9472,0.7598,0.8432,7460
+Decision Tree (10 Feat),Probe,0.676,0.6815,0.6787,2421
+Basic SentinelNet (4 Feat),Normal,0.8381,0.9611,0.8954,9711
+Basic SentinelNet (4 Feat),DoS,0.7986,0.8017,0.8002,7460
+Basic SentinelNet (4 Feat),Probe,0.7528,0.3007,0.4298,2421
+Enhanced SentinelNet (10 Feat),Normal,0.807,0.9705,0.8813,9711
+Enhanced SentinelNet (10 Feat),DoS,0.9378,0.7759,0.8492,7460
+Enhanced SentinelNet (10 Feat),Probe,0.8455,0.608,0.7074,2421
+Conventional Random Forest (41 Feat),Normal,0.7978,0.9741,0.8772,9711
+Conventional Random Forest (41 Feat),DoS,0.9621,0.7832,0.8635,7460
+Conventional Random Forest (41 Feat),Probe,0.8749,0.601,0.7125,2421

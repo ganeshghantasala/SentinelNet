@@ -1,0 +1,129 @@
+{
+  "reference": "Ingre, Yadav & Soni (2017), DOI 10.1007/978-3-319-63645-0_23",
+  "scope": "three-class adaptation; not exact reproduction",
+  "train": 124926,
+  "test": 19592,
+  "train_counts": {
+    "Normal": 67343,
+    "DoS": 45927,
+    "Probe": 11656
+  },
+  "test_counts": {
+    "Normal": 9711,
+    "DoS": 7460,
+    "Probe": 2421
+  },
+  "sklearn_version": "1.8.0",
+  "train_sha256": "1b86d2f957b33082081bba410fe129b475efebcc13c9014c3f447c8271aadf95",
+  "test_sha256": "fa46b0935342616aa83b7c2578db355b6a7aaabbc492248172c7a1e8b7ab8f84",
+  "paper_features": [
+    "duration",
+    "protocol_type",
+    "service",
+    "flag",
+    "src_bytes",
+    "dst_bytes",
+    "logged_in",
+    "serror_rate",
+    "srv_serror_rate",
+    "same_srv_rate",
+    "diff_srv_rate",
+    "dst_host_srv_diff_host_rate",
+    "dst_host_serror_rate",
+    "dst_host_srv_serror_rate"
+  ],
+  "selected_pruning": {
+    "ccp_alpha": 1e-05,
+    "validation_accuracy": 0.9987593052109182,
+    "leaves": 143
+  },
+  "class_order": [
+    "Normal",
+    "DoS",
+    "Probe"
+  ],
+  "complete": [
+    {
+      "model": "Ingre-inspired CFS14 CART",
+      "raw_features": 14,
+      "accuracy": 0.884289505920784,
+      "weighted_f1": 0.8831092002426532,
+      "macro_f1": 0.861142062553502,
+      "normal_recall": 0.9627226856142519,
+      "dos_recall": 0.8309651474530831,
+      "probe_recall": 0.7339942172655928,
+      "confusion_matrix": [
+        [
+          9349,
+          89,
+          273
+        ],
+        [
+          1249,
+          6199,
+          12
+        ],
+        [
+          483,
+          161,
+          1777
+        ]
+      ]
+    },
+    {
+      "model": "SentinelNet Basic RF",
+      "raw_features": 4,
+      "accuracy": 0.8188035933033891,
+      "weighted_f1": 0.80159597473826,
+      "macro_f1": 0.7084399999735944,
+      "normal_recall": 0.9610750695088045,
+      "dos_recall": 0.8017426273458444,
+      "probe_recall": 0.3007021891780256,
+      "confusion_matrix": [
+        [
+          9333,
+          142,
+          236
+        ],
+        [
+          1476,
+          5981,
+          3
+        ],
+        [
+          327,
+          1366,
+          728
+        ]
+      ]
+    },
+    {
+      "model": "SentinelNet Enhanced RF",
+      "raw_features": 10,
+      "accuracy": 0.8516231114740711,
+      "weighted_f1": 0.8475509277549185,
+      "macro_f1": 0.8125945200615483,
+      "normal_recall": 0.9705488621151271,
+      "dos_recall": 0.7758713136729223,
+      "probe_recall": 0.6080132176786451,
+      "confusion_matrix": [
+        [
+          9425,
+          81,
+          205
+        ],
+        [
+          1608,
+          5788,
+          64
+        ],
+        [
+          646,
+          303,
+          1472
+        ]
+      ]
+    }
+  ],
+  "notes": "Original paper uses binary/five-class tasks, sampling, MATLAB CART, WEKA CFS; this uses their published fixed feature subset, full training data, scikit-learn CART and train-validation pruning. The missing-data treatment is our explicit experimental baseline assumption, not a method claimed by the paper. Six additional SentinelNet or ten additional CART fields hidden on exactly the same rows."
+}

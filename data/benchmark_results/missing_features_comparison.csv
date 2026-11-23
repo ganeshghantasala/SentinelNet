@@ -1,0 +1,11 @@
+Missing additional fields (%),Model,Accuracy,Macro F1,Probe Recall
+0.0,Adaptive SentinelNet,0.851623,0.812595,0.608013
+0.0,Fixed Enhanced RF (imputed),0.851623,0.812595,0.608013
+25.23,Adaptive SentinelNet,0.842385,0.788051,0.528707
+25.23,Fixed Enhanced RF (imputed),0.777358,0.731987,0.510946
+49.72,Adaptive SentinelNet,0.834167,0.763105,0.451879
+49.72,Fixed Enhanced RF (imputed),0.709167,0.649877,0.422966
+75.15,Adaptive SentinelNet,0.826,0.736282,0.375878
+75.15,Fixed Enhanced RF (imputed),0.634085,0.544713,0.322594
+100.0,Adaptive SentinelNet,0.818804,0.70844,0.300702
+100.0,Fixed Enhanced RF (imputed),0.56176,0.42412,0.230483

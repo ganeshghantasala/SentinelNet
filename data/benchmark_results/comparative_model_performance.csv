@@ -1,0 +1,7 @@
+Model,Family,Raw Features,Encoded Features,Training Time (s),Inference Time (s),Latency (us/flow),Throughput (flows/s),Accuracy,Weighted F1,Macro F1,Weighted Precision,Weighted Recall,Normal Recall,DoS Recall,Probe Recall,Normal F1,DoS F1,Probe F1
+Logistic Regression (10 Feat),Linear Baseline,10,22,1.298,0.003,0.15,6478407.6,0.8035,0.8003,0.7376,0.8117,0.8035,0.9373,0.7151,0.539,0.8619,0.8014,0.5495
+K-Nearest Neighbors (10 Feat),Instance-based Baseline,10,22,0.07,1.169,59.65,16764.5,0.8597,0.8569,0.8257,0.8701,0.8597,0.9694,0.7847,0.651,0.8844,0.8622,0.7305
+Decision Tree (10 Feat),Single Tree Baseline,10,22,0.302,0.003,0.18,5606685.1,0.8372,0.8363,0.7974,0.8474,0.8372,0.9354,0.7598,0.6815,0.8702,0.8432,0.6787
+Basic SentinelNet (4 Feat),Ensemble (SentinelNet Basic),4,6,0.799,0.029,1.48,677260.7,0.8188,0.8016,0.7084,0.8125,0.8188,0.9611,0.8017,0.3007,0.8954,0.8002,0.4298
+Enhanced SentinelNet (10 Feat),Ensemble (SentinelNet Enhanced),10,22,1.243,0.03,1.55,645382.3,0.8516,0.8476,0.8126,0.8616,0.8516,0.9705,0.7759,0.608,0.8813,0.8492,0.7074
+Conventional Random Forest (41 Feat),Full-Dimensionality Ensemble,41,122,2.586,0.043,2.18,458451.1,0.8553,0.8516,0.8177,0.8699,0.8553,0.9741,0.7832,0.601,0.8772,0.8635,0.7125
