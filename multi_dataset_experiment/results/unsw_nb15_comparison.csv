@@ -1,0 +1,8 @@
+model_name,accuracy,precision,recall,macro_f1,weighted_f1,fpr,feature_count,train_time_sec,infer_time_sec,confusion_matrix,dataset,train_records,test_records,coverage,accepted_accuracy,accepted_macro_f1
+2025 IEEE Full-XGBoost,0.8739,0.8204,0.9869,0.8679,0.8707,0.2647,42,0.983,0.0173,"[[27207, 9793], [592, 44740]]",UNSW-NB15,175341,82332,,,
+2025 IEEE Paper-Inspired Baseline (Top-15 Gain + XGBoost),0.8762,0.8231,0.9875,0.8705,0.8732,0.2601,15,0.564,0.0254,"[[27378, 9622], [568, 44764]]",UNSW-NB15,175341,82332,,,
+2025 IEEE ANOVA SelectKBest + XGBoost (Top-15),0.8509,0.7907,0.9917,0.8417,0.8455,0.3217,15,0.564,0.0272,"[[25098, 11902], [375, 44957]]",UNSW-NB15,175341,82332,,,
+2025 IEEE Lasso (L1) + XGBoost (Top-15),0.8455,0.7944,0.9704,0.8374,0.841,0.3076,15,0.564,0.0258,"[[25617, 11383], [1341, 43991]]",UNSW-NB15,175341,82332,,,
+SentinelNet Enhanced Mode (42 Feats),0.8717,0.8187,0.9852,0.8656,0.8685,0.2673,42,4.686,0.02,"[[27110, 9890], [670, 44662]]",UNSW-NB15,175341,82332,,,
+SentinelNet Basic Mode (6 Core Feats),0.8707,0.8281,0.9656,0.8657,0.8684,0.2456,6,2.013,0.02,"[[27914, 9086], [1558, 43774]]",UNSW-NB15,175341,82332,,,
+Adaptive SentinelNet (Dual-Mode),0.8717,0.8187,0.9852,0.8656,,0.2673,Adaptive (6 / 42),6.699,0.1345,"[[27110, 9890], [670, 44662]]",UNSW-NB15,175341,82332,0.9025,0.9103,0.9035

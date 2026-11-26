@@ -652,5 +652,31 @@ inf,icmp,0,0
         half = next(row for row in data['paper_comparison'] if row['missing_target_pct'] == 50 and row['model'] == 'Adaptive SentinelNet')
         self.assertAlmostEqual(half['accuracy_mean'], 0.8345753368721928)
 
+    def test_37_multi_dataset_research_integration(self):
+        page = self.client.get('/')
+        self.assertEqual(page.status_code, 200)
+        self.assertIn(b'Multi-Dataset Research Evaluation (2025 IEEE Reference)', page.data)
+        self.assertIn(b'datasetSelector', page.data)
+        self.assertIn(b'UNSW-NB15', page.data)
+        
+        # Verify /api/multi-dataset-benchmark endpoint
+        res = self.client.get('/api/multi-dataset-benchmark')
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertTrue(data['success'])
+        self.assertIn('UNSW-NB15', data['datasets'])
+        self.assertIn('NSL-KDD', data['datasets'])
+        self.assertGreater(len(data['models_comparison']), 0)
+        self.assertGreater(len(data['missingness_stress_test']), 0)
+
+        # Cross-verify returned metrics against saved CSVs
+        unsw_adaptive = next(r for r in data['models_comparison'] if r['dataset'] == 'UNSW-NB15' and 'Adaptive SentinelNet' in r['model_name'])
+        self.assertAlmostEqual(unsw_adaptive['accuracy'], 0.8717, places=3)
+
+        unsw_stress_100 = next(r for r in data['missingness_stress_test'] if r['dataset'] == 'UNSW-NB15' and r['missingness_pct'] == 100)
+        self.assertAlmostEqual(unsw_stress_100['adaptive_acc_mean'], 0.8707, places=3)
+        self.assertAlmostEqual(unsw_stress_100['basic_only_rf_acc'], 0.8707, places=3)
+        self.assertAlmostEqual(unsw_stress_100['miss_trained_xgb_acc_mean'], 0.8183, places=3)
+
 if __name__ == '__main__':
     unittest.main()

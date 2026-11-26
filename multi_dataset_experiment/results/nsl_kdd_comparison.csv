@@ -1,0 +1,8 @@
+model_name,accuracy,precision,recall,macro_f1,weighted_f1,fpr,feature_count,train_time_sec,infer_time_sec,confusion_matrix,dataset,train_records,test_records,coverage,accepted_accuracy,accepted_macro_f1
+2025 IEEE Full-XGBoost,0.8068,0.9688,0.6826,0.8067,0.8059,0.029,41,0.43,0.0061,"[[9429, 282], [4073, 8760]]",NSL-KDD,125973,22544,,,
+2025 IEEE Paper-Inspired Baseline (Top-15 Gain + XGBoost),0.7943,0.9693,0.6595,0.7939,0.7927,0.0276,15,0.261,0.0087,"[[9443, 268], [4369, 8464]]",NSL-KDD,125973,22544,,,
+2025 IEEE ANOVA SelectKBest + XGBoost (Top-15),0.7769,0.9687,0.6285,0.7761,0.7742,0.0269,15,0.261,0.009,"[[9450, 261], [4768, 8065]]",NSL-KDD,125973,22544,,,
+2025 IEEE Lasso (L1) + XGBoost (Top-15),0.7555,0.961,0.5946,0.7539,0.7513,0.0319,15,0.261,0.0077,"[[9401, 310], [5203, 7630]]",NSL-KDD,125973,22544,,,
+SentinelNet Enhanced Mode (10 Feats),0.7733,0.9647,0.6246,0.7724,0.7704,0.0302,10,1.616,0.02,"[[9418, 293], [4818, 8015]]",NSL-KDD,125973,22544,,,
+SentinelNet Basic Mode (4 Core Feats),0.7954,0.9532,0.6736,0.7952,0.7944,0.0437,4,1.228,0.02,"[[9287, 424], [4189, 8644]]",NSL-KDD,125973,22544,,,
+Adaptive SentinelNet (Dual-Mode),0.7733,0.9647,0.6246,0.7724,,0.0302,Adaptive (4 / 10),2.844,0.046,"[[9418, 293], [4818, 8015]]",NSL-KDD,125973,22544,0.9573,0.7913,0.79

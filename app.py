@@ -15,6 +15,7 @@ import sys
 import io
 import re
 import json
+import math
 import base64
 import random
 import hashlib
@@ -1810,24 +1811,70 @@ def index():
     return render_template("simple.html")
 
 
+@app.after_request
+def add_cache_control_headers(response):
+    """Enforce strict no-cache headers to prevent browser caching of dynamic benchmark results."""
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
+def safe_read_csv_records(csv_path):
+    """Safely read CSV into a list of dicts with NaN/Inf converted to None for RFC 8259 JSON compliance."""
+    if not os.path.exists(csv_path):
+        return []
+    df = pd.read_csv(csv_path)
+    records = df.to_dict(orient="records")
+    for r in records:
+        for k, v in list(r.items()):
+            if pd.isna(v) or (isinstance(v, (float, np.floating)) and (math.isnan(v) or math.isinf(v))):
+                r[k] = None
+    return records
+
+
 @app.route("/api/benchmark-summary", methods=["GET"])
 def get_benchmark_summary():
     """Return recorded, local benchmark results; never imply paper replication."""
     results_dir = os.path.join(detector.base_dir, "data", "benchmark_results")
     try:
-        model_results = pd.read_csv(os.path.join(results_dir, "comparative_model_performance.csv"))
-        degradation = pd.read_csv(os.path.join(results_dir, "adaptive_simulation_results.csv"))
-        missing_path = os.path.join(results_dir, "missing_features_comparison.csv")
-        missing_comparison = pd.read_csv(missing_path).to_dict(orient="records") if os.path.exists(missing_path) else []
-        paper_path = os.path.join(detector.base_dir, "paper_comparison", "results", "missingness_summary.csv")
-        paper_comparison = pd.read_csv(paper_path).to_dict(orient="records") if os.path.exists(paper_path) else []
+        model_results = safe_read_csv_records(os.path.join(results_dir, "comparative_model_performance.csv"))
+        degradation = safe_read_csv_records(os.path.join(results_dir, "adaptive_simulation_results.csv"))
+        missing_comparison = safe_read_csv_records(os.path.join(results_dir, "missing_features_comparison.csv"))
+        paper_comparison = safe_read_csv_records(os.path.join(detector.base_dir, "paper_comparison", "results", "missingness_summary.csv"))
+        md_res_dir = os.path.join(detector.base_dir, "multi_dataset_experiment", "results")
+        multi_dataset_comparison = safe_read_csv_records(os.path.join(md_res_dir, "combined_summary.csv"))
+        multi_dataset_stress = safe_read_csv_records(os.path.join(md_res_dir, "missingness_stress_test.csv"))
         return jsonify({"success": True,
-                        "models": model_results.to_dict(orient="records"),
-                        "degradation": degradation.to_dict(orient="records"),
+                        "models": model_results,
+                        "degradation": degradation,
                         "missing_comparison": missing_comparison,
-                        "paper_comparison": paper_comparison})
+                        "paper_comparison": paper_comparison,
+                        "multi_dataset_comparison": multi_dataset_comparison,
+                        "multi_dataset_stress": multi_dataset_stress})
     except (OSError, ValueError):
         return jsonify({"success": False, "error_message": "Benchmark results unavailable. Run benchmark_evaluation.py to regenerate them."}), 503
+
+
+@app.route("/api/multi-dataset-benchmark", methods=["GET"])
+def get_multi_dataset_benchmark():
+    """Return verified multi-dataset research benchmark results across NSL-KDD and UNSW-NB15."""
+    res_dir = os.path.join(detector.base_dir, "multi_dataset_experiment", "results")
+    summary_path = os.path.join(res_dir, "combined_summary.csv")
+    stress_path = os.path.join(res_dir, "missingness_stress_test.csv")
+    if not os.path.exists(summary_path) or not os.path.exists(stress_path):
+        return jsonify({"success": False, "error_message": "Multi-dataset benchmark files unavailable."}), 404
+    try:
+        models_comparison = safe_read_csv_records(summary_path)
+        missingness_stress_test = safe_read_csv_records(stress_path)
+        return jsonify({
+            "success": True,
+            "datasets": ["UNSW-NB15", "NSL-KDD"],
+            "models_comparison": models_comparison,
+            "missingness_stress_test": missingness_stress_test
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error_message": str(e)}), 500
 
 
 @app.route("/api/dashboard", methods=["GET"])

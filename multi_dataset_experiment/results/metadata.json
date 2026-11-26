@@ -1,0 +1,97 @@
+{
+  "timestamp": "2026-11-23 20:42:05",
+  "reference_paper": {
+    "title": "Feature Selection and XGBoost for Enhanced Intrusion Detection: A Comparative Study Across Benchmark Datasets",
+    "conference": "IEEE International Symposium on Digital Forensics and Security (ISDFS 2025)",
+    "doi": "10.1109/ISDFS65363.2025.11012060",
+    "paper_fs_methods": [
+      "ANOVA SelectKBest",
+      "Lasso (L1)"
+    ],
+    "our_paper_inspired_baseline": "Top-15 XGBoost Tree-Gain Feature Selection + XGBoost",
+    "missingness_evaluations": [
+      "Adaptive SentinelNet (Dual-Mode)",
+      "Basic-Only Random Forest (Static Core Baseline)",
+      "Missingness-Trained XGBoost (50% Simulated NaNs in Training)",
+      "XGBoost Native NaN Handling (Default Branching)",
+      "Forced Median Imputation"
+    ]
+  },
+  "datasets": {
+    "NSL-KDD": {
+      "dataset": "NSL-KDD",
+      "train_samples": 125973,
+      "train_normal": 67343,
+      "train_attack": 58630,
+      "test_samples": 22544,
+      "test_normal": 9711,
+      "test_attack": 12833,
+      "full_features": 41,
+      "enhanced_features": 10,
+      "basic_features": 4
+    },
+    "UNSW-NB15": {
+      "dataset": "UNSW-NB15",
+      "train_samples": 175341,
+      "train_normal": 56000,
+      "train_attack": 119341,
+      "test_samples": 82332,
+      "test_normal": 37000,
+      "test_attack": 45332,
+      "full_features": 42,
+      "enhanced_features": 42,
+      "basic_features": 6
+    }
+  },
+  "experimental_seeds": [
+    42,
+    100,
+    2024,
+    2025,
+    2026
+  ],
+  "missingness_levels": [
+    0,
+    25,
+    50,
+    75,
+    100
+  ],
+  "missingness_definition": "Row-level session missingness: X% of ingested records have non-basic contextual features missing (NaN/imputed), simulating lightweight edge sensors vs deep packet inspection (DPI) sensors.",
+  "selected_features": {
+    "NSL-KDD_top15_gain": [
+      "src_bytes",
+      "protocol_type",
+      "dst_host_srv_rerror_rate",
+      "hot",
+      "dst_host_srv_count",
+      "count",
+      "dst_host_same_src_port_rate",
+      "logged_in",
+      "dst_bytes",
+      "dst_host_srv_diff_host_rate",
+      "dst_host_same_srv_rate",
+      "srv_count",
+      "flag",
+      "service",
+      "duration"
+    ],
+    "UNSW-NB15_top15_gain": [
+      "sttl",
+      "ct_srv_dst",
+      "sbytes",
+      "ct_dst_sport_ltm",
+      "smean",
+      "state",
+      "swin",
+      "dpkts",
+      "proto",
+      "dmean",
+      "sloss",
+      "ct_dst_src_ltm",
+      "synack",
+      "dbytes",
+      "trans_depth"
+    ]
+  }
+}

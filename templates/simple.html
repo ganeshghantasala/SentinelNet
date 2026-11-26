@@ -71,6 +71,65 @@ header{background:#102d47;color:white;padding:26px 24px}header .wrap{display:fle
           <details><summary>View all measured scenarios</summary><div class="table-wrap"><table class="comparison-table"><thead><tr><th>Basic-only records</th><th>Paper-inspired CART</th><th>SentinelNet</th><th>Difference</th></tr></thead><tbody id="paperRows"></tbody></table></div></details>
           <p class="paper-reference"><strong>Reference:</strong> Ingre, Yadav &amp; Soni (2017), <a href="https://doi.org/10.1007/978-3-319-63645-0_23" target="_blank" rel="noopener noreferrer">Decision Tree Based Intrusion Detection System for NSL-KDD Dataset</a>, Springer ICTIS. Our local three-class adaptation uses the paper's 14 published input features and a pruned CART tree. Missing extra fields are filled with training medians/modes for the fixed baseline. Five seeded simulations use identical records for both systems. These are measured local experiments, not the original paper's reported scores or an exact replication.</p>
         </div>
+        <div class="comparison-panel" id="multiDatasetPanel" hidden>
+          <details class="section-details" id="multiDatasetDetails" open>
+            <summary style="font-size:18px;font-weight:720;color:var(--ink);cursor:pointer;">Multi-Dataset Research Evaluation (2025 IEEE Reference)</summary>
+            <div style="background:#eef5fc;border-left:4px solid var(--blue);padding:10px 14px;border-radius:6px;margin:12px 0 16px;font-size:13px;">
+              <strong>Research Benchmark vs. Production Application:</strong> The interactive analyzer above evaluates 3-class traffic (Normal, DoS, Probe) for NSL-KDD. This research section presents locally evaluated binary benchmarks (Normal vs. Attack) comparing feature selection and gradient boosting against our adaptive dual-mode framework across both NSL-KDD and UNSW-NB15.
+            </div>
+            <div class="demo-control" style="margin:14px 0;">
+              <label for="datasetSelector"><strong>Benchmark Dataset:</strong></label>
+              <select id="datasetSelector">
+                <option value="UNSW-NB15" selected>UNSW-NB15 (ACCS / UNSW Canberra)</option>
+                <option value="NSL-KDD">NSL-KDD (CIC / UNB Benchmark)</option>
+              </select>
+            </div>
+            
+            <h4 style="margin:16px 0 6px;font-size:15px;">Complete-Telemetry Model Comparison (Identical Records)</h4>
+            <p class="muted small">Evaluated on all available flow features without simulated missingness.</p>
+            <div class="table-wrap">
+              <table class="comparison-table">
+                <thead>
+                  <tr>
+                    <th>Model Architecture</th>
+                    <th>Features</th>
+                    <th>Accuracy</th>
+                    <th>Precision</th>
+                    <th>Recall</th>
+                    <th>Macro F1</th>
+                    <th>FPR</th>
+                  </tr>
+                </thead>
+                <tbody id="multiDatasetModelRows"></tbody>
+              </table>
+            </div>
+
+            <h4 style="margin:20px 0 6px;font-size:15px;">Controlled Missing Telemetry Stress Test (Multi-Seed Comparison)</h4>
+            <p class="muted small">Evaluated across 5 random seeds (0% to 100% missing non-core telemetry) under identical masks.</p>
+            <div class="table-wrap">
+              <table class="comparison-table">
+                <thead>
+                  <tr>
+                    <th>Missing Telemetry</th>
+                    <th>Adaptive SentinelNet</th>
+                    <th>Missingness-Trained XGBoost</th>
+                    <th>Basic-Only RF</th>
+                    <th>Paper-Inspired XGB (Native NaN)</th>
+                    <th>Paper-Inspired XGB (Median Imp)</th>
+                    <th>Delta vs Miss-Trained XGB</th>
+                  </tr>
+                </thead>
+                <tbody id="multiDatasetStressRows"></tbody>
+              </table>
+            </div>
+
+            <div class="comparison-callout" id="multiDatasetTakeaway" role="status" aria-live="polite" style="margin-top:16px;"></div>
+
+            <p class="paper-reference">
+              <strong>Reference:</strong> <em>"Feature Selection and XGBoost for Enhanced Intrusion Detection: A Comparative Study Across Benchmark Datasets"</em>, IEEE International Symposium on Digital Forensics and Security (ISDFS 2025), DOI: <a href="https://doi.org/10.1109/ISDFS65363.2025.11012060" target="_blank" rel="noopener noreferrer">10.1109/ISDFS65363.2025.11012060</a>. All reported models are locally implemented paper-aligned or paper-inspired baselines evaluated on identical splits; they are not the paper's original printed tables.
+            </p>
+          </details>
+        </div>
         <p id="paperUnavailable" class="muted small" hidden>Published-baseline comparison files are not available. The conventional model comparison remains available.</p>
       </div>
       <p class="small muted">Benchmark results are independent of the uploaded CSV. The selected scenarios show already measured results, not a new live experiment.</p>
@@ -82,7 +141,7 @@ header{background:#102d47;color:white;padding:26px 24px}header .wrap{display:fle
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
-let selectedFile=null, lastResult=null, busy=false, benchmarkLoaded=false, paperScenarios=[];
+let selectedFile=null, lastResult=null, busy=false, benchmarkLoaded=false, paperScenarios=[], mdComparisonData=[], mdStressData=[];
 const fmt=n=>Number(n||0).toLocaleString();
 const pct=n=>Number(n||0).toFixed(1)+'%';
 const prob=n=>(Number(n||0)*100).toFixed(1)+'%';
@@ -97,7 +156,7 @@ $('dropZone').addEventListener('dragover',e=>{e.preventDefault();if(!busy)$('dro
 $('dropZone').addEventListener('dragleave',()=>$('dropZone').classList.remove('drag'));
 $('dropZone').addEventListener('drop',e=>{e.preventDefault();$('dropZone').classList.remove('drag');if(!busy)selectFile(e.dataTransfer.files[0])});
 $('analyzeBtn').addEventListener('click',()=>analyze(false));$('sampleBtn').addEventListener('click',()=>analyze(true));
-async function fetchJson(url,options){const response=await fetch(url,options);let data;try{data=await response.json()}catch(e){throw Error('The server returned an invalid response (HTTP '+response.status+'). Check the Python console.')}return {response,data}}
+async function fetchJson(url,options){const response=await fetch(url,options);let data;try{const text=await response.text();const clean=text.replace(/:\s*NaN\b/g,': null').replace(/\[\s*NaN\b/g,'[null').replace(/,\s*NaN\b/g,', null').replace(/:\s*-?Infinity\b/g,': null');data=JSON.parse(clean)}catch(e){console.error('fetchJson catch error for '+url+':', e);throw Error('The server returned an invalid response (HTTP '+response.status+'). Check the Python console.')}return {response,data}}
 async function analyze(sample){if(busy||(!sample&&!selectedFile))return;setBusy(true);lastResult=null;$('results').hidden=true;status('Validating and classifying network flows…');const body=new FormData();if(sample){body.append('use_benchmark','true');body.append('benchmark_mode','enhanced')}else{body.append('file',selectedFile)}try{const {response,data}=await fetchJson('/api/scan-batch',{method:'POST',body});if(!response.ok||!data.success){showErrors(data.error_message||'Analysis failed.',data.rejection_reasons||[]);return}lastResult=data;renderResults(data);status('Analysis complete. '+fmt(data.valid_records)+' valid records classified.','success');if($('historyDetails').open)loadHistory()}catch(e){showErrors('Unable to analyze logs: '+e.message)}finally{setBusy(false)}}
 function renderResults(data){$('resultFile').textContent=data.filename+' · '+data.scan_id;for(const [id,key] of [['total','total_records'],['normal','normal_count'],['dos','dos_count'],['probe','probe_count']])$(id).textContent=fmt(data[key]);$('validRejected').textContent=fmt(data.valid_records)+' valid · '+fmt(data.rejected_records)+' rejected';for(const name of ['normal','dos','probe']){$(name+'Pct').textContent=pct(data[name+'_pct'])+' of valid records';$('bar'+name[0].toUpperCase()+name.slice(1)).style.width=Math.max(0,Math.min(100,Number(data[name+'_pct']||0)))+'%'}$('modeSummary').textContent=fmt(data.enhanced_count)+' Enhanced · '+fmt(data.basic_count)+' Basic';$('reviewSummary').textContent=fmt(data.review_count)+' require review'+(data.fallback_count?' · '+fmt(data.fallback_count)+' fell back to Basic':'');$('rejectionList').replaceChildren();$('rejections').hidden=!data.rejected_records;for(const reason of data.rejection_reasons||[]){const li=document.createElement('li');li.textContent=reason;$('rejectionList').appendChild(li)}$('search').value='';$('classFilter').value='';$('reviewFilter').value='';$('previewNote').textContent='Showing up to '+(data.preview_records||[]).length+' of '+fmt(data.valid_records)+' valid records. Download the report for the complete results.';renderRows();$('results').hidden=false;$('results').scrollIntoView({behavior:'smooth',block:'start'})}
 function renderRows(){const body=$('predictionRows');body.replaceChildren();const search=$('search').value.trim().toLowerCase(), filter=$('classFilter').value, review=$('reviewFilter').value;let count=0;for(const [i,r] of (lastResult?.preview_records||[]).entries()){if(filter&&r.predicted_classification!==filter)continue;if(review&&r.decision_status!==review)continue;if(search&&!Object.values(r).join(' ').toLowerCase().includes(search))continue;const tr=document.createElement('tr');addCell(tr,r.flow_id||r.Flow_ID||String(i+1));addCell(tr,r.protocol_type??r.Protocol??r.protocol??'—');const c=r.predicted_classification;badgeCell(tr,c,c==='Normal'?'normal':c==='DoS'?'dos':'probe');addCell(tr,prob(r.confidence_score));badgeCell(tr,r.decision_status==='REVIEW REQUIRED'?'Review required':'Accepted',r.decision_status==='REVIEW REQUIRED'?'review':'accepted');const td=addCell(tr,'','detail-cell');const d=document.createElement('details'),sum=document.createElement('summary'),p=document.createElement('p');sum.textContent='View explanation';p.textContent=(r.detection_mode||'')+' model. '+(r.explanation||'')+(r.fallback_reason?' Fallback: '+r.fallback_reason:'');d.append(sum,p);td.appendChild(d);body.appendChild(tr);count++}if(!count){const tr=document.createElement('tr');addCell(tr,'No matching preview records.').colSpan=6;body.appendChild(tr)}}
@@ -107,7 +166,7 @@ async function loadBenchmark(){
     if(benchmarkLoaded)return;
     $('benchmarkStatus').hidden=false;$('benchmarkStatus').textContent='Loading comparison…';
     try{
-        const {response,data}=await fetchJson('/api/benchmark-summary');
+        const {response,data}=await fetchJson('/api/benchmark-summary?_t='+Date.now());
         if(!response.ok||!data.success)throw Error(data.error_message||'Benchmark unavailable');
         $('benchmarkRows').replaceChildren();
         const full=data.models.find(r=>r.Model.startsWith('Conventional Random Forest')),enh=data.models.find(r=>r.Model.startsWith('Enhanced SentinelNet'));
@@ -118,9 +177,129 @@ async function loadBenchmark(){
         $('paperSection').hidden=!paperScenarios.length;$('paperUnavailable').hidden=Boolean(paperScenarios.length);$('paperRows').replaceChildren();
         for(const {rate,ours,baseline} of paperScenarios){const tr=document.createElement('tr');const delta=(ours.accuracy_mean-baseline.accuracy_mean)*100;for(const value of [rate+'%',(baseline.accuracy_mean*100).toFixed(2)+'%',(ours.accuracy_mean*100).toFixed(2)+'%',(delta>=0?'+':'')+delta.toFixed(2)+' pp'])addCell(tr,value);$('paperRows').appendChild(tr)}
         if(paperScenarios.length){$('missingRate').value=paperScenarios.some(r=>r.rate===50)?'50':String(paperScenarios[0].rate);renderPaperScenario()}
+        mdComparisonData=data.multi_dataset_comparison||[];
+        mdStressData=data.multi_dataset_stress||[];
+        if(mdComparisonData.length&&mdStressData.length){
+            $('multiDatasetPanel').hidden=false;
+            renderMultiDataset($('datasetSelector').value||'UNSW-NB15');
+        }else{
+            $('multiDatasetPanel').hidden=true;
+        }
         $('benchmarkContent').hidden=false;$('benchmarkStatus').hidden=true;benchmarkLoaded=true;
     }catch(e){$('benchmarkStatus').textContent=e.message;$('benchmarkStatus').className='status error'}
 }
+function renderMultiDataset(ds){
+    if(!mdComparisonData.length)return;
+    const compRows=mdComparisonData.filter(r=>r.dataset===ds);
+    const stressRows=mdStressData.filter(r=>r.dataset===ds).sort((a,b)=>a.missingness_pct-b.missingness_pct);
+    const modelTbody=$('multiDatasetModelRows');
+    modelTbody.replaceChildren();
+    const findComp=pattern=>compRows.find(r=>r.model_name.includes(pattern));
+    const zeroStress=stressRows.find(r=>r.missingness_pct===0)||{};
+    const displayList=[
+        {
+            name:'Adaptive SentinelNet (Dual-Mode)',
+            features:ds==='UNSW-NB15'?'Adaptive (6 / 42)':'Adaptive (4 / 10)',
+            accuracy:findComp('Adaptive SentinelNet')?.accuracy,
+            precision:findComp('Adaptive SentinelNet')?.precision,
+            recall:findComp('Adaptive SentinelNet')?.recall,
+            macro_f1:findComp('Adaptive SentinelNet')?.macro_f1,
+            fpr:findComp('Adaptive SentinelNet')?.fpr,
+            highlight:true
+        },
+        {
+            name:'Basic-Only Random Forest',
+            features:ds==='UNSW-NB15'?'6 (Core)':'4 (Core)',
+            accuracy:zeroStress.basic_only_rf_acc,
+            precision:findComp('Basic Mode')?.precision,
+            recall:zeroStress.basic_only_rf_rec,
+            macro_f1:zeroStress.basic_only_rf_f1,
+            fpr:zeroStress.basic_only_rf_fpr
+        },
+        {
+            name:'Paper-Inspired Baseline (Top-15 Gain + XGBoost)',
+            features:'15',
+            accuracy:findComp('Top-15 Gain')?.accuracy,
+            precision:findComp('Top-15 Gain')?.precision,
+            recall:findComp('Top-15 Gain')?.recall,
+            macro_f1:findComp('Top-15 Gain')?.macro_f1,
+            fpr:findComp('Top-15 Gain')?.fpr
+        },
+        {
+            name:'ANOVA SelectKBest + XGBoost',
+            features:'15',
+            accuracy:findComp('ANOVA')?.accuracy,
+            precision:findComp('ANOVA')?.precision,
+            recall:findComp('ANOVA')?.recall,
+            macro_f1:findComp('ANOVA')?.macro_f1,
+            fpr:findComp('ANOVA')?.fpr
+        },
+        {
+            name:'Lasso (L1) + XGBoost',
+            features:'15',
+            accuracy:findComp('Lasso')?.accuracy,
+            precision:findComp('Lasso')?.precision,
+            recall:findComp('Lasso')?.recall,
+            macro_f1:findComp('Lasso')?.macro_f1,
+            fpr:findComp('Lasso')?.fpr
+        },
+        {
+            name:'Missingness-Trained XGBoost (50% NaNs)',
+            features:ds==='UNSW-NB15'?'15 (Trained w/ NaNs)':'15 (Trained w/ NaNs)',
+            accuracy:zeroStress.miss_trained_xgb_acc_mean,
+            precision:null,
+            recall:null,
+            macro_f1:zeroStress.miss_trained_xgb_f1_mean,
+            fpr:null
+        },
+        {
+            name:'Full-XGBoost (Upper-Bound Reference)',
+            features:ds==='UNSW-NB15'?'42':'41',
+            accuracy:findComp('Full-XGBoost')?.accuracy,
+            precision:findComp('Full-XGBoost')?.precision,
+            recall:findComp('Full-XGBoost')?.recall,
+            macro_f1:findComp('Full-XGBoost')?.macro_f1,
+            fpr:findComp('Full-XGBoost')?.fpr
+        }
+    ];
+    for(const m of displayList){
+        const tr=document.createElement('tr');
+        if(m.highlight)tr.style.fontWeight='650';
+        addCell(tr,m.name);
+        addCell(tr,m.features);
+        addCell(tr,m.accuracy!=null?(m.accuracy*100).toFixed(2)+'%':'—');
+        addCell(tr,m.precision!=null?(m.precision*100).toFixed(2)+'%':'—');
+        addCell(tr,m.recall!=null?(m.recall*100).toFixed(2)+'%':'—');
+        addCell(tr,m.macro_f1!=null?(m.macro_f1*100).toFixed(2)+'%':'—');
+        addCell(tr,m.fpr!=null?(m.fpr*100).toFixed(2)+'%':'—');
+        modelTbody.appendChild(tr);
+    }
+    const stressTbody=$('multiDatasetStressRows');
+    stressTbody.replaceChildren();
+    for(const s of stressRows){
+        const tr=document.createElement('tr');
+        addCell(tr,s.missingness_pct+'% missing');
+        addCell(tr,(s.adaptive_acc_mean*100).toFixed(2)+'% ± '+(s.adaptive_acc_std*100).toFixed(2)+'%');
+        addCell(tr,(s.miss_trained_xgb_acc_mean*100).toFixed(2)+'%');
+        addCell(tr,(s.basic_only_rf_acc*100).toFixed(2)+'%');
+        addCell(tr,(s.fs_xgb_nan_acc_mean*100).toFixed(2)+'%');
+        addCell(tr,(s.fs_xgb_imp_acc_mean*100).toFixed(2)+'%');
+        const delta=(s.delta_acc_vs_miss_xgb*100);
+        const deltaTd=addCell(tr,(delta>=0?'+':'')+delta.toFixed(2)+' pp');
+        deltaTd.style.fontWeight='700';
+        deltaTd.style.color=delta>=0?'var(--green)':'var(--red)';
+        stressTbody.appendChild(tr);
+    }
+    const takeaway=$('multiDatasetTakeaway');
+    if(ds==='UNSW-NB15'){
+        takeaway.className='comparison-callout';
+        takeaway.innerHTML='<strong>Principal Contribution on UNSW-NB15:</strong> Adaptive SentinelNet consistently outperforms Missingness-Trained XGBoost across all missingness levels (by <strong>+0.64% to +5.24%</strong>), demonstrating that specialized dual models preserve higher discriminative power than a single compromised model trained on mixed missing telemetry.';
+    }else{
+        takeaway.className='comparison-callout tradeoff';
+        takeaway.innerHTML='<strong>Principal Contribution on NSL-KDD:</strong> Adaptive SentinelNet achieves lower accuracy than Missingness-Trained XGBoost in binary classification (by <strong>-0.97% to -3.43%</strong>). On NSL-KDD, payload byte volume dominates binary attack detection; however, in the production 3-class application, Enhanced Mode is required to double reconnaissance probe detection (60.80% vs 30.07%).';
+    }
+}
+$('datasetSelector').addEventListener('change',()=>renderMultiDataset($('datasetSelector').value));
 function renderPaperScenario(){
     const scenario=paperScenarios.find(r=>r.rate===Number($('missingRate').value));if(!scenario)return;
     const {rate,ours,baseline}=scenario,oa=ours.accuracy_mean*100,ba=baseline.accuracy_mean*100,delta=oa-ba;
